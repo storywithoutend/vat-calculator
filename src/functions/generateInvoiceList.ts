@@ -95,3 +95,23 @@ export const generateInvoiceList = async (
     }
   })
 }
+
+const normalizeValue = (value?: any, fixed=2, postFix = '', multiplier = 1 ) => {
+  if (!value || isNaN(value)) return ''
+  return `${(value * multiplier).toFixed(fixed)}${postFix}`
+}
+
+export const generateNormalizedInvoiceList = async (data: AmazonData[]) => {
+  const invoiceList = await generateInvoiceList(data)
+  return invoiceList.map((invoice) => {
+    return ({
+    ...invoice,
+    PRICE_OF_ITEMS_VAT_RATE_PERCENT: normalizeValue(invoice.PRICE_OF_ITEMS_VAT_RATE_PERCENT, 0, '%', 100),
+    TOTAL_ACTIVITY_VALUE_VAT_AMT: normalizeValue(invoice.TOTAL_ACTIVITY_VALUE_VAT_AMT, 2),
+    TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL: normalizeValue(invoice.TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL, 2),
+    NET_ACTIVITY_VALUE_AMT: normalizeValue(invoice.NET_ACTIVITY_VALUE_AMT, 2),
+    TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO: normalizeValue(invoice.TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO, 2),
+    TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO: normalizeValue(invoice.TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO, 2),
+    NET_ACTIVITY_VALUE_AMT_IN_EURO: normalizeValue(invoice.NET_ACTIVITY_VALUE_AMT_IN_EURO, 2),
+  })})
+}

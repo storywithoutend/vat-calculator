@@ -14,13 +14,13 @@ export const generateOutput = async (data: Invoice[]) => {
   const level1 = Object.keys(level1Data)
     .filter((s) => !!s)
     .sort()
-    .map((s) => [1, s])
+    .map((s) => [1, s,'','','','','','',''])
 
   const shipData = data.reduce((acc, item) => {
     const {
       SALE_DEPART_COUNTRY,
       SALE_ARRIVAL_COUNTRY,
-      TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO,
+      TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO,
       NET_ACTIVITY_VALUE_AMT_IN_EURO,
     } = item
 
@@ -35,9 +35,9 @@ export const generateOutput = async (data: Invoice[]) => {
     const addNet = isNaN(NET_ACTIVITY_VALUE_AMT_IN_EURO)
       ? 0
       : NET_ACTIVITY_VALUE_AMT_IN_EURO
-    const addVat = isNaN(TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO)
+    const addVat = isNaN(TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO)
       ? 0
-      : TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO
+      : TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO
     return {
       ...acc,
       [SALE_DEPART_COUNTRY]: {
@@ -50,12 +50,12 @@ export const generateOutput = async (data: Invoice[]) => {
     }
   }, {} as any)
 
-  const level2 = Object.keys(shipData[HOME_COUTNRY]).sort().map((country) => [3, country, 'STANDARD', getVatRatesBy('shortcode', country), shipData[HOME_COUTNRY][country].net, shipData[HOME_COUTNRY][country].vat])
+  const level2 = Object.keys(shipData[HOME_COUTNRY]).sort().map((country) => [3, country, 'STANDARD', getVatRatesBy('shortcode', country), shipData[HOME_COUTNRY][country].net.toFixed(2), shipData[HOME_COUTNRY][country].vat.toFixed(2),,,])
   const level3 = Object.keys(shipData).filter((s) => s !== HOME_COUTNRY).sort().flatMap((departCountry) => {
     const departObject = shipData[departCountry]
     return Object.keys(departObject).sort().map((arrivalCountry) => {
       const { net, vat } = departObject[arrivalCountry]
-      return [5, arrivalCountry, 1, departCountry, 'VAT_ID', 'STANDARD', getVatRatesBy('shortcode', arrivalCountry), net, vat]
+      return [5, arrivalCountry, 1, departCountry, 'VAT_ID', 'STANDARD', getVatRatesBy('shortcode', arrivalCountry), net.toFixed(2), vat.toFixed(2)]
     })
   }).sort((a, b) => a[1].localeCompare(b[1]))
   return [...level1, ...level2, ...level3]
