@@ -26,13 +26,13 @@ const list = [
   ["Slovakia", "SK", "Slovakia", 0.2],
   ["Finland", "FI", "Finland", 0.24],
   ["Sweden", "SE", "Sweden", 0.25],
-  ["Switzerland", "CH", "Switzerland", 0.077], // TODO: Check this value since it's not in euro union
-  ["United Kingdom", "GB", "United Kingdom", 0.2], // TODO: Check this value since it's not in euro union
-  ['Guernsey', 'GG', 'UnitedKingdom', 0.2], // TODO: Check this value since it's not in euro union
 ] as const
 
 export const getVatRatesBy = (id: 'country' | 'shortcode' ,value: string): number => {
   const row = list.find((item) => id === 'country' ? item[0] === value : item[1] === value)
-  if (!row) throw new Error(`No VAT rate found for ${id} ${value}`)
+  if (!row) {
+    if (process.env.NODE_ENV === 'development') console.error(`No VAT rate found for ${id} ${value}`)
+    return 0
+  }
   return row[3]
 }
