@@ -3,7 +3,10 @@ import { Invoice } from "../types/index"
 
 const HOME_COUTNRY = "DE"
 
-export const generateOutput = async (data: Invoice[]) => {
+export const generateOutput = async (unfilteredData: Invoice[]) => {
+
+  const data = unfilteredData.filter((item) => item.MARKETPLACE_PAID === 'OSS')
+  
   const level1Data = data.reduce((acc, item) => {
     const { SALE_ARRIVAL_COUNTRY } = item
     return {
