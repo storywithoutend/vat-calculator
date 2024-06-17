@@ -1,7 +1,7 @@
 import { generateInvoiceList } from "./generateInvoiceList.js";
 import { describe, it, expect } from "vitest";
 import fs from 'fs';
-import { parseAmazonData } from "../utils/parseAmazonData.js";
+import { parseAmazonData } from "../utils/parseFile/parsers/parseAmazonData.js";
 
 describe("generateInvoiceList", () => {
   it("should generate invoice list", async () => {

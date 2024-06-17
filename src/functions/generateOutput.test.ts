@@ -1,7 +1,7 @@
 import { generateOutput } from './generateOutput.js';
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import { parseAmazonData } from '../utils/parseAmazonData.js';
+import { parseAmazonData } from '../utils/parseFile/parsers/parseAmazonData.js';
 import { generateInvoiceList } from './generateInvoiceList.js';
 
 describe('generateOutput', () => {

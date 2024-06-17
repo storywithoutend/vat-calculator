@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import Link from "next/link"
+import { CssBaseline } from "@mui/material"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -16,9 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
+      <CssBaseline/>
       <body className={inter.className}>
         <header>
+          <Link href='/'>
           <h1>Vat Calculator</h1>
+          </Link>
         </header>
         <main>{children}</main>
       </body>
