@@ -44,7 +44,10 @@ export const MainView = ({
   const files = useLiveQuery(() => db.files.toArray(), [])
 
   const [reports, setReports] = useState<{ report: string; count: number }[]>([])
-  const reportIds = useLiveQuery(() => db.fileItems.orderBy('report').uniqueKeys(), [])
+  const reportIds = useLiveQuery(async () => {
+    if (await db.fileItems.count() === 0) return []
+    return db.fileItems.orderBy('report').uniqueKeys()
+  }, [])
   useEffect(() => {
     (async () => {
       if (!reportIds) return
