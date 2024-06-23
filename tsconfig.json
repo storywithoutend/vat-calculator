@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/utils/tabDelimitedTextToJSON.ts", "src/functions/generateInvoiceList.ts", "src/utils/parseAmazonData.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/utils/tabDelimitedTextToJSON.ts", "src/functions/generateInvoiceList.ts", "src/utils/parseFile/parsers/parseAmazonData.ts"],
   "exclude": ["node_modules"]
 }

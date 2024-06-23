@@ -1,7 +1,7 @@
 import { filterAmazonData } from './filterAmazonData.mjs';
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import { parseAmazonData } from './parseAmazonData.js';
+import { parseAmazonData } from './parseFile/parsers/parseAmazonData.js';
 
 describe('filterAmazonData', () => {
   it('should filter Amazon data', async () => {

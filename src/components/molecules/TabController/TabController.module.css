@@ -1,0 +1,16 @@
+.tabController {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+  color: gray;
+  padding: 12px;
+}
+
+.tab {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.active {
+  color: blue;
+}

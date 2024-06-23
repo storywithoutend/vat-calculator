@@ -2,29 +2,19 @@
 
 import { useState } from "react"
 import { match } from "ts-pattern"
-import { TabController } from "@/components/TabController/TabController"
-import { AmazonDataView } from "@/components/AmazonDataView/AmazonDataView"
+import { TabController } from "@/components/molecules/TabController/TabController"
+import { AmazonDataView } from "@/components/views/AmazonDataView/AmazonDataView"
 import { AmazonData } from "@/types"
-import { InvoiceView } from "@/components/InvoiceView/InvoiceView"
-import { OutputView } from "@/components/OutputView/OutputView"
-import { InputView } from "@/components/InputView/InputView"
+import { InvoiceView } from "@/components/views/InvoiceView/InvoiceView"
+import { OutputView } from "@/components/views/OutputView/OutputView"
+import { InputView } from "@/components/views/InputView/InputView"
+import { FileResult } from "@/utils/parseFiles/parseFiles"
+import { MainView } from "@/components/views/MainView/MainView"
 
 export type Tab = "amazon" | "invoice" | "output"
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>("amazon")
-  const [data, setData] = useState<AmazonData[]>([])
-
-  if (data.length === 0) return <InputView setData={setData}/>
-  return (
-    <>
-      <TabController tab={tab} onChange={setTab} />
-      {match(tab)
-        .with("invoice", () => <InvoiceView data={data} />)
-        .with("output", () => <OutputView data={data} />)
-        .otherwise(() => (
-          <AmazonDataView data={data}/>
-        ))}
-    </>
-  )
+  const [files, setFiles] = useState<FileResult[]>([])
+  
+  return <MainView files={files} setFiles={setFiles}/>
 }
