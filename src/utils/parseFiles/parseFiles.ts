@@ -13,6 +13,7 @@ interface FileBaseResult<TData = unknown> {
   errorMessage?: string
   minDate?: Date
   maxDate?: Date
+  reports?: string[]
 }
 
 interface FileAmazonResult<TData = unknown> extends FileBaseResult<TData> {

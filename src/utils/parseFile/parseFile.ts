@@ -6,6 +6,7 @@ export type Data = {
   source: 'amazon',
   minDate?: Date,
   maxDate?: Date,
+  report?: string,
   items: any[],
   count: number
 }

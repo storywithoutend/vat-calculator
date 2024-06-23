@@ -9,8 +9,8 @@ const EXCHANGE_RATE_TABLE = {
 }
 
 export const generateInvoiceList = async (
-  data: AmazonData[],
-): Promise<Invoice[]> => {
+  data: any[],
+): Promise<any []> => {
   return data.map((invoice) => {
     const {
       // Typ
@@ -48,7 +48,7 @@ export const generateInvoiceList = async (
 
     const NET_ACTIVITY_VALUE_AMT =
       TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL - TOTAL_ACTIVITY_VALUE_VAT_AMT
-    const EXCHANGE_RATE = EXCHANGE_RATE_TABLE[TRANSACTION_CURRENCY_CODE]
+    const EXCHANGE_RATE = EXCHANGE_RATE_TABLE[TRANSACTION_CURRENCY_CODE as keyof typeof EXCHANGE_RATE_TABLE]
     const TOTAL_ACTIVITY_VALUE_VAT_AMT_IN_EURO =
       TOTAL_ACTIVITY_VALUE_VAT_AMT / EXCHANGE_RATE
     const TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL_IN_EURO =

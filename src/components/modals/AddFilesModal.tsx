@@ -5,29 +5,22 @@ import {
   Button,
   Card,
   CardActions,
-  CardContent,
   CardHeader,
   Chip,
   Modal,
   Paper,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
   Typography,
 } from "@mui/material"
 import { FileDownload } from "@mui/icons-material"
 import { ComponentProps, useCallback, useMemo, useState } from "react"
-import { DataGrid } from "@mui/x-data-grid"
 import { match } from "ts-pattern"
-import { amazonToInvoice } from "@/utils/platforms/amazon/amazonToInvoice"
-import { AmazonData } from "@/types"
-import { INVOICE_SCHEMA } from "@/utils/invoice/invoiceSchema"
 import { useDropzone } from "react-dropzone"
 import { DBFile, db } from "@/db/db"
 
@@ -37,9 +30,6 @@ type Props = Omit<ComponentProps<typeof Modal>, "children"> & {
 
 type Tab = "file" | "invoice"
 export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => {
-  const views = ["input", "list"]
-  const [viewIdx, setViewIdx] = useState(0)
-  const view = views[viewIdx]
 
   const [files, setFiles] = useState<FileResult[]>([])
 
@@ -166,7 +156,7 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
               } else {
                 onSafeClose?.({}, 'backdropClick')
               }
-            }}>Close</Button>
+            }}>Cancel</Button>
             <Button variant='contained' disableElevation disabled={isSaveButtonDisabled} onClick={async () => {
               try {
                 const successfullFiles = files.filter((file) => file.status === "success")
@@ -179,9 +169,9 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
                   ...item
                 })))
                 await db.fileItems.bulkAdd(fileItemObjects)  
-                console.log('Saved files', fileObjects, fileItemObjects)              
+                onSafeClose?.({}, 'backdropClick')
               } catch {
-
+                // Delete files if failed
               }
             }}>
               Save

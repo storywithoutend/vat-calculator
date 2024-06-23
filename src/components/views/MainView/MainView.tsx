@@ -7,50 +7,59 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Chip,
   Typography,
   Stack,
   Button,
   IconButton,
 } from "@mui/material"
 import { useLiveQuery } from "dexie-react-hooks"
-import { SetStateAction, useMemo, useState, Dispatch } from "react"
-import { getFinancialQuarters } from "@/utils/time/getFinancialQuarters"
-import { calcMinDate } from "@/utils/time/calcMinDate"
-import { calcMaxDate } from "@/utils/time/calcMaxDate"
+import {
+  SetStateAction,
+  useState,
+  Dispatch,
+  ComponentProps,
+  useEffect,
+} from "react"
 import { AddFilesModal } from "@/components/modals/AddFilesModal"
 import { db } from "@/db/db"
 import { Delete } from "@mui/icons-material"
 import Link from "next/link"
+import { DeleteFileModal } from "@/components/modals/DeleteFileModal"
+
+const OutlinedPaper = (props: ComponentProps<typeof Paper>) => (
+  <Paper {...props} variant='outlined' elevation={0} />
+)
 
 export const MainView = ({
-  files,
-  setFiles,
 }: {
   files: FileResult[]
   setFiles: Dispatch<SetStateAction<FileResult[]>>
 }) => {
-  const [selectedFileIndex, setSelectedFileIndex] = useState(-1)
   const [showAddFilesModal, setShowAddFilesModal] = useState(false)
+  const [showDeleteFileModal, setShowDeleteFileModal] = useState<{
+    fileId?: number
+    open: boolean
+  }>({ open: false })
 
-  const files2 = useLiveQuery(() => db.files.toArray(), [])
-  console.log("files", files2)
+  const files = useLiveQuery(() => db.files.toArray(), [])
 
-  const reports = useMemo(() => {
-    return []
-    const { minDate, maxDate } = files.reduce<{
-      minDate?: Date
-      maxDate?: Date
-    }>((acc, file) => {
-      const { minDate, maxDate } = file
-      if (!minDate || !maxDate) return acc
-      return {
-        minDate: calcMinDate(minDate, acc.minDate),
-        maxDate: calcMaxDate(maxDate, acc.maxDate),
-      }
-    }, {})
-    return getFinancialQuarters(minDate, maxDate)
-  }, [files])
+  const [reports, setReports] = useState<{ report: string; count: number }[]>([])
+  const reportIds = useLiveQuery(() => db.fileItems.orderBy('report').uniqueKeys(), [])
+  useEffect(() => {
+    (async () => {
+      if (!reportIds) return
+      const reportData = await Promise.all(reportIds.map(async (reportId) => {
+        
+        const count = await db.fileItems.where('report').equals(reportId).count()
+        console.log('count', count)
+        return {
+          report: reportId as string,
+          count,
+        }
+      }))
+      setReports(reportData)
+    })()
+  }, [reportIds])
 
   return (
     <>
@@ -58,54 +67,67 @@ export const MainView = ({
         <Stack gap={2}>
           <Stack direction={"row"} justifyContent={"space-between"}>
             <Typography variant='h4'>Files</Typography>
-            <Button onClick={() => setShowAddFilesModal(true)}>
+            <Button variant="contained" disableElevation onClick={() => setShowAddFilesModal(true)}>
               Add files
             </Button>
           </Stack>
-          <TableContainer component={Paper}>
+          <TableContainer component={OutlinedPaper}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Filename</TableCell>
-                  <TableCell>Dates</TableCell>
+                  <TableCell>Report</TableCell>
                   <TableCell>Size</TableCell>
                   <TableCell>Rows</TableCell>
                   <TableCell />
                 </TableRow>
               </TableHead>
               <TableBody>
-                {files2 && files2?.length > 0 ? (
-                  files2?.map((file, i) => (
-                    <TableRow key={file.id} onClick={() => alert('testing')} hover component={Link} href={`/file?id=${file.id}`}>
+                {files && files?.length > 0 ? (
+                  files?.map((file, i) => (
+                    <TableRow
+                      key={file.id}
+                      hover
+                      component={Link}
+                      href={`/file?id=${file.id}`}
+                    >
                       <TableCell>
-                        {file.name}
-                        <div>
-                          <Chip
-                            variant='outlined'
-                            size='small'
-                            label={file.source}
-                          />
-                        </div>
+                        <Typography fontSize={14} fontWeight={"bold"}>
+                          {file.name}
+                        </Typography>
+                        <Typography fontSize={12} textTransform={"capitalize"}>{file.source}</Typography>
                       </TableCell>
                       <TableCell>
-                        {file.minDate?.toLocaleDateString("default", {
-                          month: "short",
-                          year: "numeric",
-                        })}
-                        &nbsp;-&nbsp;
-                        {file.maxDate?.toLocaleDateString("default", {
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        <Typography fontSize={14} fontWeight={"bold"}>
+                          {file.reports.join(", ")}
+                        </Typography>
+                        <Typography fontSize={12}>
+                          {file.minDate?.toLocaleDateString("default", {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                          &nbsp;-&nbsp;
+                          {file.maxDate?.toLocaleDateString("default", {
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         {(file.size / 1000000).toFixed(1)} MB
                       </TableCell>
                       <TableCell>{(file.count / 1000).toFixed(1)}K</TableCell>
-                      <TableCell>
-                        <IconButton onClick={(event) => {
-                          event.stopPropagation()
-                        }}>
+                      <TableCell width={50}>
+                        <IconButton
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            event.preventDefault()
+                            setShowDeleteFileModal({
+                              fileId: file.id,
+                              open: true,
+                            })
+                          }}
+                        >
                           <Delete />
                         </IconButton>
                       </TableCell>
@@ -126,11 +148,12 @@ export const MainView = ({
           <Stack direction={"row"}>
             <Typography variant='h4'>Reports</Typography>
           </Stack>
-          <TableContainer component={Paper}>
+          <TableContainer component={OutlinedPaper}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Reporting Quarter</TableCell>
+                  <TableCell>Size</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
@@ -142,9 +165,10 @@ export const MainView = ({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  reports.map((report) => (
-                    <TableRow key={report}>
+                  reports.map(({ report, count }) => (
+                    <TableRow key={report} hover>
                       <TableCell>{report}</TableCell>
+                      <TableCell>{count}</TableCell>
                       <TableCell>
                         <Button>View report</Button>
                       </TableCell>
@@ -159,6 +183,10 @@ export const MainView = ({
       <AddFilesModal
         open={showAddFilesModal}
         onClose={() => setShowAddFilesModal(false)}
+      />
+      <DeleteFileModal
+        {...showDeleteFileModal}
+        onClose={() => setShowDeleteFileModal({ open: false })}
       />
     </>
   )

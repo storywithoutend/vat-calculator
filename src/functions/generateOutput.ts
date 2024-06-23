@@ -1,9 +1,8 @@
 import { getVatRatesBy } from "../utils/getVATRatesBy"
-import { Invoice } from "../types/index"
 
 const HOME_COUTNRY = "DE"
 
-export const generateOutput = async (unfilteredData: Invoice[]) => {
+export const generateOutput = async (unfilteredData: any[]) => {
 
   const data = unfilteredData.filter((item) => item.MARKETPLACE_PAID === 'OSS')
   
