@@ -1,3 +1,4 @@
+import { getExchangeRate } from "./currency/getExchangeRate"
 import { getVatRatesBy } from "./getVATRatesBy"
 import { InvoiceItem } from "./invoice/invoiceSchema"
 
@@ -9,8 +10,13 @@ export type Output = {
       net: number
       vat: number
       currency: string
+      sellerVatNumber: string
     }
   }
+}
+
+const convertToEuro = (value: number, from: string) => {
+  return (getExchangeRate("EUR", from as any) * value).toFixed(2)
 }
 
 export const invoiceListToOutput = (invoiceList: InvoiceItem[]) => {
@@ -18,7 +24,7 @@ export const invoiceListToOutput = (invoiceList: InvoiceItem[]) => {
     (invoice) => invoice.marketPlace === "OSS",
   )
   const shipData = filteredInvoiceList.reduce<Output>((acc, item) => {
-    const { departCountry, arrivalCountry, vat, netSale, transactionCurrency } =
+    const { departCountry, arrivalCountry, vat, netSale, transactionCurrency, sellerVatNumber } =
       item
 
     if (!departCountry || !arrivalCountry) return acc
@@ -26,9 +32,12 @@ export const invoiceListToOutput = (invoiceList: InvoiceItem[]) => {
     const safeDepartObject = acc[departCountry] ? acc[departCountry] : {}
     const safeArrivalObject = safeDepartObject[arrivalCountry]
       ? safeDepartObject[arrivalCountry]
-      : { net: 0, vat: 0 }
+      : { net: 0, vat: 0, currency: transactionCurrency, sellerVatNumber: ""}
     const addNet = isNaN(netSale) ? 0 : netSale
     const addVat = isNaN(vat) ? 0 : vat
+    if (safeArrivalObject.sellerVatNumber && sellerVatNumber && sellerVatNumber !== safeArrivalObject.sellerVatNumber) {
+     console.error(`sellerVatNumber mismatch: ${sellerVatNumber} !== ${safeArrivalObject.sellerVatNumber}`) 
+    }
     return {
       ...acc,
       [departCountry]: {
@@ -37,6 +46,7 @@ export const invoiceListToOutput = (invoiceList: InvoiceItem[]) => {
           net: safeArrivalObject.net + addNet,
           vat: safeArrivalObject.vat + addVat,
           currency: transactionCurrency,
+          sellerVatNumber
         },
       },
     }
@@ -63,8 +73,8 @@ export const invoiceListToOutput = (invoiceList: InvoiceItem[]) => {
     const level5 = Object.keys(shipData).filter((s) => s !== HOME_COUNTRY).sort().flatMap((departCountry) => {
       const departObject = shipData[departCountry]
       return Object.keys(departObject).sort().map((arrivalCountry) => {
-        const { net, vat, currency } = departObject[arrivalCountry]
-        return [5, arrivalCountry, 1, departCountry, 'VAT_ID', 'STANDARD', getVatRatesBy('shortcode', arrivalCountry), net.toFixed(2), vat.toFixed(2)]
+        const { net, vat, currency, sellerVatNumber } = departObject[arrivalCountry]
+        return [5, arrivalCountry, 1, departCountry, sellerVatNumber, 'STANDARD', getVatRatesBy('shortcode', arrivalCountry), convertToEuro(net, currency), convertToEuro(vat, currency)]
       })
     }).sort((a, b) =>{ 
       return (a[1] as string).localeCompare((b[1] as string))})    

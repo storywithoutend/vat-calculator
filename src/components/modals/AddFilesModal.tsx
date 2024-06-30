@@ -29,8 +29,12 @@ type Props = Omit<ComponentProps<typeof Modal>, "children"> & {
 }
 
 type Tab = "file" | "invoice"
-export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => {
-
+export const AddFilesModal = ({
+  data,
+  open,
+  onClose,
+  ...modalProps
+}: Props) => {
   const [files, setFiles] = useState<FileResult[]>([])
 
   const onDrop = useCallback(async (acceptedFile: File[]) => {
@@ -41,9 +45,13 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
 
   const isSaveButtonDisabled = !files.some((file) => file.status === "success")
 
-
-  const onSafeClose: ComponentProps<typeof Modal>['onClose'] = (event, reason) => {
-    onClose?.(event, reason)
+  const onSafeClose: ComponentProps<typeof Modal>["onClose"] = (
+    event,
+    reason,
+  ) => {
+    if (!onClose) return
+    onClose(event, reason)
+    setFiles([])
   }
 
   return (
@@ -64,14 +72,17 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
             {match(files.length > 0)
               .with(true, () => (
                 <Box>
-                  <TableContainer component={Paper} elevation={0} variant="outlined">
+                  <TableContainer
+                    component={Paper}
+                    elevation={0}
+                    variant='outlined'
+                  >
                     <Table>
                       <TableHead>
                         <TableRow>
                           <TableCell>Filename</TableCell>
-                          <TableCell>Dates</TableCell>
-                          <TableCell>Size</TableCell>
-                          <TableCell>Rows</TableCell>
+                          <TableCell>Reports</TableCell>
+                          <TableCell>Items</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -79,29 +90,39 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
                           file.status === "success" ? (
                             <TableRow key={i}>
                               <TableCell>
-                                <Badge
-                                  color='primary'
-                                  badgeContent={file.source}
-                                >
+                                <Typography fontSize={14} fontWeight={"bold"}>
                                   {file.name}
-                                </Badge>
+                                </Typography>
+                                <Typography
+                                  fontSize={12}
+                                  textTransform={"capitalize"}
+                                >
+                                  {file.source}
+                                </Typography>
                               </TableCell>
                               <TableCell>
-                                {file.minDate?.toLocaleDateString("default", {
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                                &nbsp;-&nbsp;
-                                {file.maxDate?.toLocaleDateString("default", {
-                                  month: "short",
-                                  year: "numeric",
-                                })}
+                                <Typography fontSize={14} fontWeight={"bold"}>
+                                  {file.reports?.join(", ")}
+                                </Typography>
+                                <Typography fontSize={12}>
+                                  {file.minDate?.toLocaleDateString("default", {
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                  &nbsp;-&nbsp;
+                                  {file.maxDate?.toLocaleDateString("default", {
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                </Typography>
                               </TableCell>
                               <TableCell>
-                                {(file.size / 1000000).toFixed(1)} MB
-                              </TableCell>
-                              <TableCell>
-                                {(file.count / 1000).toFixed(1)}K
+                                <Typography fontSize={14} fontWeight={"bold"}>
+                                  {(file.count / 1000).toFixed(1)}K
+                                </Typography>
+                                <Typography fontSize={12}>
+                                  {(file.size / 1000000).toFixed(1)} MB
+                                </Typography>
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -149,31 +170,52 @@ export const AddFilesModal = ({ data, open, onClose, ...modalProps }: Props) => 
               ))}
           </Box>
           <CardActions>
-            <Button variant='outlined' onClick={() => {
-              if (files.length > 0) {
-                // TODO: clear input as well
-                setFiles([])
-              } else {
-                onSafeClose?.({}, 'backdropClick')
-              }
-            }}>Cancel</Button>
-            <Button variant='contained' disableElevation disabled={isSaveButtonDisabled} onClick={async () => {
-              try {
-                const successfullFiles = files.filter((file) => file.status === "success")
-                const fileObjects = successfullFiles.map(({ items, status, ...rest}) => rest) as Omit<DBFile, 'id'>[]
-                const fileObjectIds = await db.files.bulkAdd(fileObjects, undefined, {allKeys: true})
+            <Button
+              variant='outlined'
+              onClick={() => {
+                if (files.length > 0) {
+                  // TODO: clear input as well
+                  setFiles([])
+                } else {
+                  onSafeClose?.({}, "backdropClick")
+                }
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant='contained'
+              disableElevation
+              disabled={isSaveButtonDisabled}
+              onClick={async () => {
+                try {
+                  const successfullFiles = files.filter(
+                    (file) => file.status === "success",
+                  )
+                  const fileObjects = successfullFiles.map(
+                    ({ items, status, ...rest }) => rest,
+                  ) as Omit<DBFile, "id">[]
+                  const fileObjectIds = await db.files.bulkAdd(
+                    fileObjects,
+                    undefined,
+                    { allKeys: true },
+                  )
 
-                const fileItemObjects = successfullFiles.flatMap(({ items, source, status, ...rest}, i) => items.map((item: any) => ({
-                  file: (fileObjectIds as unknown as number[])[i],
-                  source,
-                  ...item
-                })))
-                await db.fileItems.bulkAdd(fileItemObjects)  
-                onSafeClose?.({}, 'backdropClick')
-              } catch {
-                // Delete files if failed
-              }
-            }}>
+                  const fileItemObjects = successfullFiles.flatMap(
+                    ({ items, source, status, ...rest }, i) =>
+                      items.map((item: any) => ({
+                        file: (fileObjectIds as unknown as number[])[i],
+                        source,
+                        ...item,
+                      })),
+                  )
+                  await db.fileItems.bulkAdd(fileItemObjects)
+                  onSafeClose?.({}, "backdropClick")
+                } catch {
+                  // Delete files if failed
+                }
+              }}
+            >
               Save
             </Button>
           </CardActions>

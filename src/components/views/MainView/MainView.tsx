@@ -25,6 +25,7 @@ import { db } from "@/db/db"
 import { Delete } from "@mui/icons-material"
 import Link from "next/link"
 import { DeleteFileModal } from "@/components/modals/DeleteFileModal"
+import { useRouter } from "next/navigation"
 
 const OutlinedPaper = (props: ComponentProps<typeof Paper>) => (
   <Paper {...props} variant='outlined' elevation={0} />
@@ -35,6 +36,8 @@ export const MainView = ({
   files: FileResult[]
   setFiles: Dispatch<SetStateAction<FileResult[]>>
 }) => {
+  const router = useRouter()
+
   const [showAddFilesModal, setShowAddFilesModal] = useState(false)
   const [showDeleteFileModal, setShowDeleteFileModal] = useState<{
     fileId?: number
@@ -169,7 +172,7 @@ export const MainView = ({
                   </TableRow>
                 ) : (
                   reports.map(({ report, count }) => (
-                    <TableRow key={report} hover>
+                    <TableRow key={report} hover component={Link} href={`/report?id=${report}`}>
                       <TableCell>{report}</TableCell>
                       <TableCell>{count}</TableCell>
                       <TableCell>
