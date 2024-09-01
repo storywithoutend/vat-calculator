@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { match } from "ts-pattern"
 import { TabController } from "@/components/molecules/TabController/TabController"
-import { AmazonDataView } from "@/components/views/AmazonDataView/AmazonDataView"
 import { AmazonData } from "@/types"
 import { InvoiceView } from "@/components/views/InvoiceView/InvoiceView"
 import { OutputView } from "@/components/views/OutputView/OutputView"

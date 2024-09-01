@@ -1,11 +1,13 @@
 "use client"
 
+import { TableToolbar } from "@/components/atoms/TableToolbar/TableToolbar"
 import { db } from "@/db/db"
+import { useTableProps } from "@/hooks/useTableProps"
 import { fileTeInvoice } from "@/utils/fileToInvoice/fileToInvoice"
 import { INVOICE_SCHEMA, InvoiceItem } from "@/utils/invoice/invoiceSchema"
 import { invoiceListToOutput } from "@/utils/invoiceListToOutput"
 import { Box, Stack, Tab, Tabs } from "@mui/material"
-import { DataGrid, GridToolbar } from "@mui/x-data-grid"
+import { DataGrid, GridToolbar, GridToolbarExport } from "@mui/x-data-grid"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useMemo, useState } from "react"
 import { match } from "ts-pattern"
@@ -18,49 +20,14 @@ export default function File({
   searchParams: { id: string }
 }) {
   const { id: reportId } = searchParams
-  const fileItems = useLiveQuery(() =>  db.fileItems.where({ report: reportId}).toArray())
+  const fileItems = useLiveQuery(() =>
+    db.fileItems.where({ report: reportId }).toArray(),
+  )
 
   const [tab, setTab] = useState<Tab>("file")
-  const { rows, columns } = useMemo(() => {
-    console.log("fileItems", fileItems)
-    return match(tab)
-      .with("output", () => {
-        const invoiceList = fileItems?.map(fileTeInvoice).filter((item): item is InvoiceItem => !!item) || []
-        const output = invoiceListToOutput(invoiceList).map((item, i) => ({id: i, ...item}))
-        return {
-          rows: output,
-          columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((key) => ({
-            field: key,
-            headerName: "",
-          })),
-        }
-      })
-      .with("invoice", () => {
-        return {
-          rows:
-            fileItems
-              ?.map(fileTeInvoice)
-              .filter((item): item is InvoiceItem => !!item) || [],
-          columns: Object.keys(INVOICE_SCHEMA).map((key) => ({
-            field: key,
-            headerName: key,
-          })),
-        }
-      })
-      .otherwise(() => {
-        return {
-          rows: fileItems || [],
-          columns: Object.keys(fileItems?.[0] || {})
-            .filter(
-              (value) => !["file", "source", "id", "report"].includes(value),
-            )
-            .map((key) => ({
-              field: key,
-              headerName: key,
-            })),
-        }
-      })
-  }, [tab, fileItems])
+
+  const tableProps = useTableProps({ fileItems, view: tab })
+
   return (
     <Stack
       width={"100%"}
@@ -82,13 +49,7 @@ export default function File({
         overflow={"hidden"}
         style={{ background: "white" }}
       >
-        <DataGrid
-          // @ts-ignore
-          rows={rows}
-          // @ts-ignore
-          columns={columns}
-          slots={{ toolbar: GridToolbar }}
-        />
+        <DataGrid {...tableProps} />
       </Box>
     </Stack>
   )
