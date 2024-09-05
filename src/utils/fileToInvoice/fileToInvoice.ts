@@ -8,3 +8,9 @@ export const fileTeInvoice = (fileItem: DBFileItem): InvoiceItem | null => {
     console.error('fileToInvoice: unknown source', fileItem.source)
   return null
 }
+
+export const fileItemsToInvoiceItems = ({ fileItems }: {fileItems: DBFileItem[]}): { data: InvoiceItem[]; errors: string[]} => {
+  if (!fileItems) return { data: [], errors: ['fileItem does not exist']}
+  const data = fileItems.map(fileTeInvoice).filter((item): item is InvoiceItem => !!item)
+  return { data, errors: [] }
+}

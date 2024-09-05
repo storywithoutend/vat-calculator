@@ -6,8 +6,8 @@ import fileItems from '@/../test/data/fileItems.json'
 describe('invoiceListToOutput', () => {
 
   it('should generate output', async () => {
-    const invoice = (fileItems as any).map(fileTeInvoice)
-    const output = invoiceListToOutput(invoice)
+    const invoiceItems = (fileItems as any).map(fileTeInvoice)
+    const output = invoiceListToOutput({ invoiceItems })
   })
 
 })

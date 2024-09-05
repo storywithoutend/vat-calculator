@@ -11,7 +11,7 @@ export const amazonToInvoice = ({
   VAT_INV_NUMBER,
   // Dokumentendatum
   TRANSACTION_COMPLETE_DATE,
-  SELLER_DEPART_COUNTRY_VAT_NUMBER,
+  TRANSACTION_SELLER_VAT_NUMBER,
   // USIdNr. Kunde
   BUYER_VAT_NUMBER = '',
   // Versandstartland
@@ -68,7 +68,7 @@ export const amazonToInvoice = ({
     vatInvoiceNumber: VAT_INV_NUMBER,
     transactionDate: parseAmazonDate(TRANSACTION_COMPLETE_DATE),
     buyerVatNumber: BUYER_VAT_NUMBER,
-    sellerVatNumber: SELLER_DEPART_COUNTRY_VAT_NUMBER,
+    sellerVatNumber: TRANSACTION_SELLER_VAT_NUMBER,
     departCountry: SALE_DEPART_COUNTRY,
     arrivalCountry: SALE_ARRIVAL_COUNTRY,
     vatCountry: TAXABLE_JURISDICTION,

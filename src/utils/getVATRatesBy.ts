@@ -36,3 +36,5 @@ export const getVatRatesBy = (id: 'country' | 'shortcode' ,value: string): numbe
   }
   return row[3]
 }
+
+export const formatVatRate = (vatRate: number) => (vatRate * 100).toFixed(2)

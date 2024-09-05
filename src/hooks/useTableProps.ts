@@ -3,12 +3,13 @@ import {
   OutputTableToolbar,
 } from "@/components/atoms/TableToolbar/TableToolbar"
 import { DBFileItem } from "@/db/db"
-import { fileTeInvoice } from "@/utils/fileToInvoice/fileToInvoice"
+import { fileItemsToInvoiceItems, fileTeInvoice } from "@/utils/fileToInvoice/fileToInvoice"
 import { INVOICE_SCHEMA, InvoiceItem } from "@/utils/invoice/invoiceSchema"
 import { invoiceListToOutput } from "@/utils/invoiceListToOutput"
 import { DataGridProps, GridSingleSelectColDef } from "@mui/x-data-grid"
 import { useMemo } from "react"
 import { match } from "ts-pattern"
+import { useVATId } from "./useVATId"
 
 export const useTableProps = ({
   fileItems = [],
@@ -17,14 +18,14 @@ export const useTableProps = ({
   fileItems?: DBFileItem[]
   view?: "file" | "invoice" | "output"
 }): DataGridProps => {
+  const [vatIds] = useVATId()
+
   return useMemo(() => {
     return match(view)
       .with("output", () => {
-        const invoiceList =
-          fileItems
-            ?.map(fileTeInvoice)
-            .filter((item): item is InvoiceItem => !!item) || []
-        const output = invoiceListToOutput(invoiceList).map((item, i) => ({
+        const { data: invoiceItems} = fileItemsToInvoiceItems({fileItems})
+
+        const output = invoiceListToOutput({invoiceItems, vatIds}).map((item, i) => ({
           id: i.toString(),
           ...item,
         }))
@@ -41,15 +42,16 @@ export const useTableProps = ({
               6: "",
               7: "",
               8: "",
+              9: "",
             },
             ...output,
           ],
-          columns: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((key) => ({
+          columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((key) => ({
             field: key.toString(),
             headerName: "",
-            type: "singleSelect" as const,
+            type: "string" as const,
           })),
-          columnHeaderHeight: 0,
+          columnHeaderHeight: 1,
           slots: {
             toolbar: OutputTableToolbar,
           },

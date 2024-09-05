@@ -12,8 +12,6 @@ import { MainView } from "@/components/views/MainView/MainView"
 
 export type Tab = "amazon" | "invoice" | "output"
 
-export default function Home() {
-  const [files, setFiles] = useState<FileResult[]>([])
-  
-  return <MainView files={files} setFiles={setFiles}/>
+export default function Home() {  
+  return <MainView />
 }

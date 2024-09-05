@@ -26,17 +26,18 @@ import { Delete } from "@mui/icons-material"
 import Link from "next/link"
 import { DeleteFileModal } from "@/components/modals/DeleteFileModal"
 import { useRouter } from "next/navigation"
+import { useVATId } from "@/hooks/useVATId"
+import { EditVatIdsModal } from "@/components/modals/EditVatIdsModal"
 
 const OutlinedPaper = (props: ComponentProps<typeof Paper>) => (
   <Paper {...props} variant='outlined' elevation={0} />
 )
 
-export const MainView = ({
-}: {
-  files: FileResult[]
-  setFiles: Dispatch<SetStateAction<FileResult[]>>
-}) => {
+export const MainView = ({}: {}) => {
   const router = useRouter()
+
+  const [vatIds, setVatIds] = useVATId()
+  const [showEditVatIdsModal, setShowEditVatIdsModal] = useState(false)
 
   const [showAddFilesModal, setShowAddFilesModal] = useState(false)
   const [showDeleteFileModal, setShowDeleteFileModal] = useState<{
@@ -46,23 +47,29 @@ export const MainView = ({
 
   const files = useLiveQuery(() => db.files.toArray(), [])
 
-  const [reports, setReports] = useState<{ report: string; count: number }[]>([])
+  const [reports, setReports] = useState<{ report: string; count: number }[]>(
+    [],
+  )
   const reportIds = useLiveQuery(async () => {
-    if (await db.fileItems.count() === 0) return []
-    return db.fileItems.orderBy('report').uniqueKeys()
+    if ((await db.fileItems.count()) === 0) return []
+    return db.fileItems.orderBy("report").uniqueKeys()
   }, [])
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (!reportIds) return
-      const reportData = await Promise.all(reportIds.map(async (reportId) => {
-        
-        const count = await db.fileItems.where('report').equals(reportId).count()
-        console.log('count', count)
-        return {
-          report: reportId as string,
-          count,
-        }
-      }))
+      const reportData = await Promise.all(
+        reportIds.map(async (reportId) => {
+          const count = await db.fileItems
+            .where("report")
+            .equals(reportId)
+            .count()
+          console.log("count", count)
+          return {
+            report: reportId as string,
+            count,
+          }
+        }),
+      )
       setReports(reportData)
     })()
   }, [reportIds])
@@ -72,8 +79,48 @@ export const MainView = ({
       <Stack gap={8}>
         <Stack gap={2}>
           <Stack direction={"row"} justifyContent={"space-between"}>
+            <Typography variant='h4'>Vat Ids</Typography>
+            <Button
+              variant='contained'
+              disableElevation
+              onClick={() => setShowEditVatIdsModal(true)}
+            >
+              Edit Vat Ids
+            </Button>
+          </Stack>
+          <TableContainer component={OutlinedPaper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Country Code</TableCell>
+                  <TableCell>Vat Id</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.entries(vatIds).map(([countryCode, vatId], i) => (
+                  <TableRow key={countryCode} hover>
+                    <TableCell>
+                      <Typography fontSize={14} fontWeight={"bold"}>
+                        {countryCode}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography fontSize={14}>{vatId}</Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Stack>
+        <Stack gap={2}>
+          <Stack direction={"row"} justifyContent={"space-between"}>
             <Typography variant='h4'>Files</Typography>
-            <Button variant="contained" disableElevation onClick={() => setShowAddFilesModal(true)}>
+            <Button
+              variant='contained'
+              disableElevation
+              onClick={() => setShowAddFilesModal(true)}
+            >
               Add files
             </Button>
           </Stack>
@@ -101,7 +148,9 @@ export const MainView = ({
                         <Typography fontSize={14} fontWeight={"bold"}>
                           {file.name}
                         </Typography>
-                        <Typography fontSize={12} textTransform={"capitalize"}>{file.source}</Typography>
+                        <Typography fontSize={12} textTransform={"capitalize"}>
+                          {file.source}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography fontSize={14} fontWeight={"bold"}>
@@ -172,7 +221,12 @@ export const MainView = ({
                   </TableRow>
                 ) : (
                   reports.map(({ report, count }) => (
-                    <TableRow key={report} hover component={Link} href={`/report?id=${report}`}>
+                    <TableRow
+                      key={report}
+                      hover
+                      component={Link}
+                      href={`/report?id=${report}`}
+                    >
                       <TableCell>{report}</TableCell>
                       <TableCell>{count}</TableCell>
                       <TableCell>
@@ -186,6 +240,10 @@ export const MainView = ({
           </TableContainer>
         </Stack>
       </Stack>
+      <EditVatIdsModal
+        open={showEditVatIdsModal}
+        onClose={() => setShowEditVatIdsModal(false)}
+      />
       <AddFilesModal
         open={showAddFilesModal}
         onClose={() => setShowAddFilesModal(false)}
