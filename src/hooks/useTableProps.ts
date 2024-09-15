@@ -43,6 +43,7 @@ export const useTableProps = ({
               7: "",
               8: "",
               9: "",
+              10: "",
             },
             ...output,
           ],

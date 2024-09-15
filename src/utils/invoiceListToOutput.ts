@@ -20,6 +20,17 @@ const convertToEuro = (value: number, from: string) => {
   return (getExchangeRate("EUR", from as any) * value).toFixed(2)
 }
 
+const normalizeCountry = (country: string) => {
+  // GB === XI?
+  // GB: 23.51
+  // PL: 444.42 vs 113.28
+  // SE: 14664.42 vs 1315.17
+
+  if (country === 'MC') return 'FR'
+  if (country === 'GR') return 'EL'
+  return country
+}
+
 export const invoiceListToOutput = ({invoiceItems, vatIds}: {invoiceItems: InvoiceItem[], vatIds: VATIds},) => {
 
   const filteredInvoiceList = invoiceItems.filter(
@@ -27,10 +38,12 @@ export const invoiceListToOutput = ({invoiceItems, vatIds}: {invoiceItems: Invoi
   )
   
   const shipData = filteredInvoiceList.reduce<Output>((acc, item) => {
-    const { departCountry, arrivalCountry, vat, netSale, transactionCurrency, sellerVatNumber } =
+    const { departCountry, arrivalCountry: _arrivalCountry, vat, netSale, transactionCurrency, sellerVatNumber } =
       item
 
-    if (!departCountry || !arrivalCountry) return acc
+    if (!departCountry || !_arrivalCountry) return acc
+
+    const arrivalCountry = normalizeCountry(_arrivalCountry)
 
     const safeDepartObject = acc[departCountry] ? acc[departCountry] : {}
     const safeArrivalObject = safeDepartObject[arrivalCountry]

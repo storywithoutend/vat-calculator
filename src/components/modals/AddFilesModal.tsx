@@ -28,7 +28,6 @@ type Props = Omit<ComponentProps<typeof Modal>, "children"> & {
   data?: FileResult
 }
 
-type Tab = "file" | "invoice"
 export const AddFilesModal = ({
   data,
   open,
@@ -189,9 +188,12 @@ export const AddFilesModal = ({
               disabled={isSaveButtonDisabled}
               onClick={async () => {
                 try {
+                  console.log(files)
                   const successfullFiles = files.filter(
                     (file) => file.status === "success",
                   )
+
+                  console.log(successfullFiles)
                   const fileObjects = successfullFiles.map(
                     ({ items, status, ...rest }) => rest,
                   ) as Omit<DBFile, "id">[]
