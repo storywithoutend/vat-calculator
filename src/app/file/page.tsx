@@ -25,6 +25,7 @@ export default function File({
 
   const tableProps = useTableProps({ fileItems, view: tab })
   
+  if (!tableProps) return "loading..."
   return (
     <Stack
       width={"100%"}

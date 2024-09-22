@@ -19,10 +19,11 @@ import {
   Typography,
 } from "@mui/material"
 import { FileDownload } from "@mui/icons-material"
-import { ComponentProps, useCallback, useMemo, useState } from "react"
-import { match } from "ts-pattern"
+import { ComponentProps, useCallback, useEffect, useMemo, useState } from "react"
+import { match, P } from "ts-pattern"
 import { useDropzone } from "react-dropzone"
 import { DBFile, db } from "@/db/db"
+import { flushSync } from "react-dom"
 
 type Props = Omit<ComponentProps<typeof Modal>, "children"> & {
   data?: FileResult
@@ -35,10 +36,18 @@ export const AddFilesModal = ({
   ...modalProps
 }: Props) => {
   const [files, setFiles] = useState<FileResult[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    if (open) alert('open')
+  }, [open])
 
   const onDrop = useCallback(async (acceptedFile: File[]) => {
+    flushSync(() => setIsUploading(true))
     const data = await parseFiles(acceptedFile as unknown as FileList)
     setFiles(data)
+    flushSync(() => setIsUploading(false))
   }, [])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
@@ -48,7 +57,7 @@ export const AddFilesModal = ({
     event,
     reason,
   ) => {
-    if (!onClose) return
+    if (!onClose || isSaving) return
     onClose(event, reason)
     setFiles([])
   }
@@ -68,8 +77,9 @@ export const AddFilesModal = ({
         <Stack height={"100%"}>
           <CardHeader title='Add files'></CardHeader>
           <Box flex={"1"} padding={"0 16px"}>
-            {match(files.length > 0)
-              .with(true, () => (
+            {match([isUploading || isSaving, files.length > 0])
+              .with([true, P._], () => <div>{isSaving ? 'Saving files' : 'Loading files'}</div>)
+              .with([false, true], () => (
                 <Box>
                   <TableContainer
                     component={Paper}
@@ -171,6 +181,7 @@ export const AddFilesModal = ({
           <CardActions>
             <Button
               variant='outlined'
+              disabled={isUploading || isSaving}
               onClick={() => {
                 if (files.length > 0) {
                   // TODO: clear input as well
@@ -185,15 +196,14 @@ export const AddFilesModal = ({
             <Button
               variant='contained'
               disableElevation
-              disabled={isSaveButtonDisabled}
+              disabled={isSaveButtonDisabled || isUploading || isSaving}
               onClick={async () => {
                 try {
-                  console.log(files)
+                  flushSync(() => setIsSaving(true))
                   const successfullFiles = files.filter(
                     (file) => file.status === "success",
                   )
 
-                  console.log(successfullFiles)
                   const fileObjects = successfullFiles.map(
                     ({ items, status, ...rest }) => rest,
                   ) as Omit<DBFile, "id">[]
@@ -215,6 +225,8 @@ export const AddFilesModal = ({
                   onSafeClose?.({}, "backdropClick")
                 } catch {
                   // Delete files if failed
+                } finally {
+                  flushSync(() => setIsSaving(false))
                 }
               }}
             >
