@@ -26,6 +26,8 @@ const list = [
   ["Slovakia", "SK", "Slovakia", 0.2],
   ["Finland", "FI", "Finland", 0.24],
   ["Sweden", "SE", "Sweden", 0.25],
+  ["United Kingdom", "GB", "United Kingdom", 0.2],
+  ["Northern Ireland", "XI", "United Kingdom", 0.2],
 ] as const
 
 export const getVatRatesBy = (id: 'country' | 'shortcode' ,value: string): number => {

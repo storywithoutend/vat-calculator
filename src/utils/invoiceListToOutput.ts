@@ -20,6 +20,14 @@ const convertToEuro = (value: number, from: string) => {
   return (getExchangeRate("EUR", from as any) * value).toFixed(2)
 }
 
+const formatCurrency= (value: number) => {
+  return (Math.round(value * 100) / 100).toFixed(2)
+}
+
+const calculateNetFromVat = (vat: number, vatRate: number) => {
+  return vat / vatRate
+}
+
 const normalizeCountry = (country: string) => {
   // GB === XI?
   // GB: 23.51
@@ -28,6 +36,7 @@ const normalizeCountry = (country: string) => {
 
   if (country === 'MC') return 'FR'
   if (country === 'GR') return 'EL'
+  if (country === 'GB') return 'XI'
   return country
 }
 
@@ -38,7 +47,7 @@ export const invoiceListToOutput = ({invoiceItems, vatIds}: {invoiceItems: Invoi
   )
   
   const shipData = filteredInvoiceList.reduce<Output>((acc, item) => {
-    const { departCountry, arrivalCountry: _arrivalCountry, vat, netSale, transactionCurrency, sellerVatNumber } =
+    const { departCountry, arrivalCountry: _arrivalCountry, vatEuro: vat, netSale, transactionCurrency, sellerVatNumber } =
       item
 
     if (!departCountry || !_arrivalCountry) return acc
@@ -76,23 +85,29 @@ export const invoiceListToOutput = ({invoiceItems, vatIds}: {invoiceItems: Invoi
 
   const level3 = Object.keys(shipData[HOME_COUNTRY])
     .sort()
-    .map((country) => [
+    .map((country) => {
+      const vat = shipData[HOME_COUNTRY][country].vat
+      const vatRate = getVatRatesBy("shortcode", country)
+      const net = calculateNetFromVat(vat, vatRate)
+      return [
       3,
       country,
       "STANDARD",
-      formatVatRate(getVatRatesBy("shortcode", country)),
-      shipData[HOME_COUNTRY][country].net.toFixed(2),
-      shipData[HOME_COUNTRY][country].vat.toFixed(2),
+      formatVatRate(vatRate),
+      formatCurrency(net),
+      formatCurrency(vat),
       "",
       "",
       ""
-    ])
+    ]})
 
     const level5 = Object.keys(shipData).filter((s) => s !== HOME_COUNTRY).sort().flatMap((departCountry) => {
       const departObject = shipData[departCountry]
       return Object.keys(departObject).sort().map((arrivalCountry) => {
         const { net, vat, currency } = departObject[arrivalCountry]
-        return [5, arrivalCountry, 1, departCountry, vatIds[departCountry], "", 'STANDARD', formatVatRate(getVatRatesBy('shortcode', arrivalCountry)), convertToEuro(net, currency), convertToEuro(vat, currency)]
+        const vatRate = getVatRatesBy('shortcode', arrivalCountry)
+        const netFromVat = vat / vatRate
+        return [5, arrivalCountry, 1, departCountry, vatIds[departCountry], "", 'STANDARD', formatVatRate(getVatRatesBy('shortcode', arrivalCountry)), formatCurrency(netFromVat), formatCurrency(vat)]
       })
     }).sort((a, b) =>{ 
       return (a[1] as string).localeCompare((b[1] as string))})    
