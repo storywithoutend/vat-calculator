@@ -28,6 +28,7 @@ import { DeleteFileModal } from "@/components/modals/DeleteFileModal"
 import { useRouter } from "next/navigation"
 import { useVATId } from "@/hooks/useVATId"
 import { EditVatIdsModal } from "@/components/modals/EditVatIdsModal"
+import { useExchangeRate } from "@/hooks/useExchangeRate/useExchangeRate"
 
 const OutlinedPaper = (props: ComponentProps<typeof Paper>) => (
   <Paper {...props} variant='outlined' elevation={0} />
@@ -54,6 +55,7 @@ export const MainView = ({}: {}) => {
     if ((await db.fileItems.count()) === 0) return []
     return db.fileItems.orderBy("report").uniqueKeys()
   }, [])
+
   useEffect(() => {
     ;(async () => {
       if (!reportIds) return
@@ -73,6 +75,9 @@ export const MainView = ({}: {}) => {
       setReports(reportData)
     })()
   }, [reportIds])
+
+  const test = useExchangeRate({ financialQuarters: reports.map((r) => r.report)})
+  console.log(test)
 
   return (
     <>

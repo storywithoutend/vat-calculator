@@ -5,6 +5,6 @@ export const deleteFile = async (fileId: number) => {
     await db.fileItems.where({ file: fileId }).delete()
     await db.files.delete(fileId)
   } catch {
-    alert("Failed to delete file")
+    console.error("Failed to delete file")
   }
 }

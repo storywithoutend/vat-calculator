@@ -16,23 +16,10 @@ export default function TableLayout({
   children: React.ReactNode
 }>) {
   return (
-    <>
-      {/* <CssBaseline />
-      <Stack
-        height='100vh'
-        overflow='hidden'
-        component='body'
-        className={inter.className}
-      >
-        <header>
-          <Link href='/'>
-            <h1>Vat Calculator</h1>
-          </Link>
-        </header> */}
+    <>    
         <Stack component='main' flex='1' overflow={"hidden"} position="relative" >
           {children}
         </Stack>
-      {/* </Stack> */}
       </>
   )
 }

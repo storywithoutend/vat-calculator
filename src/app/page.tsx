@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { match } from "ts-pattern"
-import { TabController } from "@/components/molecules/TabController/TabController"
-import { AmazonData } from "@/types"
-import { InvoiceView } from "@/components/views/InvoiceView/InvoiceView"
-import { OutputView } from "@/components/views/OutputView/OutputView"
-import { InputView } from "@/components/views/InputView/InputView"
-import { FileResult } from "@/utils/parseFiles/parseFiles"
 import { MainView } from "@/components/views/MainView/MainView"
+import { Providers } from "@/components/providers/Providers"
 
-export type Tab = "amazon" | "invoice" | "output"
-
-export default function Home() {  
-  return <MainView />
+export default function Home() {
+  return (
+    <Providers>
+      <MainView />
+    </Providers>
+  )
 }

@@ -1,40 +1,39 @@
 "use client"
 
+import { Providers } from "@/components/providers/Providers"
 import { db } from "@/db/db"
 import { useExchangeRate } from "@/hooks/useExchangeRate/useExchangeRate"
 import { useTableProps } from "@/hooks/useTableProps"
 import { Box, Stack, Tab, Tabs } from "@mui/material"
 import { DataGrid } from "@mui/x-data-grid"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useState } from "react"
 
 export type Tab = "file" | "invoice" | "output"
 
-export default function ReportContent({
+export default function FileContent({
   searchParams,
 }: {
   searchParams: { id: string }
 }) {
-  const { id: reportId } = searchParams
+  const { id } = searchParams
+  const parsedId = parseInt(id)
+  const file = useLiveQuery(() => db.files.get(parsedId))
   const fileItems = useLiveQuery(() =>
-    db.fileItems.where({ report: reportId }).toArray(),
+    db.fileItems.where({ file: parsedId }).toArray(),
   )
 
-  const [queryClient] = useState(() => new QueryClient())
+  const exchangeRates = useExchangeRate({ 
+    financialQuarters: file?.reports ?? []
+  })
 
   const [tab, setTab] = useState<Tab>("file")
 
-  const exchangeRates = useExchangeRate({ financialQuarters: [reportId]})
-  console.log(exchangeRates)
-
   const tableProps = useTableProps({ fileItems, view: tab, exchangeRates })
 
-  const isLoading = !tableProps || !exchangeRates || exchangeRates.some((query) => query.isLoading)
-
-  if (isLoading) return "loading..."
+  if (!tableProps) return "loading..."
   return (
-    <QueryClientProvider client={queryClient}>
+    <Providers>
       <Stack
         width={"100%"}
         height={"calc(100vh - 110px)"}
@@ -42,7 +41,7 @@ export default function ReportContent({
         position={"relative"}
         gap={1}
       >
-        <h1>{reportId}</h1>
+        <h1>{file?.name}</h1>
         <Tabs value={tab} onChange={(_, newValue) => setTab(newValue)}>
           <Tab label='File' value='file' />
           <Tab label='Invoice' value='invoice' />
@@ -58,6 +57,6 @@ export default function ReportContent({
           <DataGrid {...tableProps} />
         </Box>
       </Stack>
-    </QueryClientProvider>
+    </Providers>
   )
 }

@@ -39,10 +39,6 @@ export const AddFilesModal = ({
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  useEffect(() => {
-    if (open) alert('open')
-  }, [open])
-
   const onDrop = useCallback(async (acceptedFile: File[]) => {
     flushSync(() => setIsUploading(true))
     const data = await parseFiles(acceptedFile as unknown as FileList)

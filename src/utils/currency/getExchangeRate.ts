@@ -1,7 +1,7 @@
 const EXCHANGE_RATE_TABLE = {
   EUR: 1,
   GBP: 0.85873,
-  PLN: 4.3648,
+  PLN: 4.3009,
   SEK: 11.2834,
   CZK: 24.716,
 } as const
