@@ -1,3 +1,22 @@
+export type AmazonData = {
+  SALES_CHANNEL: string
+  VAT_INV_NUMBER: string
+  TRANSACTION_COMPLETE_DATE: string
+  SALE_DEPART_COUNTRY: string
+  SALE_ARRIVAL_COUNTRY: string
+  TAXABLE_JURISDICTION: string
+  TRANSACTION_EVENT_ID: string
+  PRICE_OF_ITEMS_VAT_RATE_PERCENT: number
+  TOTAL_ACTIVITY_VALUE_VAT_AMT: number
+  TOTAL_ACTIVITY_VALUE_AMT_VAT_INCL: number
+  TRANSACTION_CURRENCY_CODE: string
+  ARRIVAL_POST_CODE: string
+  ARRIVAL_CITY: string
+  TAX_REPORTING_SCHEME: string
+  EXPORT_OUTSIDE_EU: boolean
+  TAX_COLLECTION_RESPONSIBILITY: string
+}
+
 type RawType = 'string' | 'number' | 'boolean' | 'undefined'
 
 export const AMAZON_DATA_SCHEMA: {

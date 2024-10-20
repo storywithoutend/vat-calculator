@@ -1,6 +1,8 @@
 import styles from "./TabController.module.css"
-import type { Tab } from "@/app/page"
 import classNames from "classnames"
+
+type Tab = "amazon" | "invoice" | "output"
+
 export const TabController = ({
   tab,
   onChange,

@@ -81,10 +81,11 @@ export const amazonToInvoice = ({ exchangeRates }: Dependencies) => (item: DBAma
     ? "UVA MARKETPLACE"
     : "UVA"
 
+
   // If B2B, shoudl not be UNION-OSS
   const SALES_TYPE = BUYER_VAT_NUMBER ? "B2B" : "B2C"
 
-  if (transactionCurrency === 'PLN' && isOSS) console.log(SALE_DEPART_COUNTRY, '->', SALE_ARRIVAL_COUNTRY, TOTAL_ACTIVITY_VALUE_VAT_AMT, VAT_INV_EXCHANGE_RATE, VAT_INV_CONVERTED_AMT, VAT_INV_CURRENCY_CODE, exchangeRate, item)
+  if (isOSS && !!transactionCurrency && transactionCurrency !== 'EUR') console.log(SALE_DEPART_COUNTRY, '->', `${SALE_ARRIVAL_COUNTRY}:`, `currency = ${TRANSACTION_CURRENCY_CODE};`, `vat rate = ${VAT_INV_EXCHANGE_RATE || 'N/A'}`)
 
   return {
     id,

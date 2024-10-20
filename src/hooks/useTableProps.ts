@@ -108,5 +108,5 @@ export const useTableProps = ({
         }
       })
       .otherwise(() => null)
-  }, [safeView, fileItems, vatIds, exchangeRatesData])
+  }, [safeView, fileItems, vatIds, exchangeRatesData, isLoading])
 }
