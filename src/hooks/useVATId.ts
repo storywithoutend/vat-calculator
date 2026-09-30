@@ -1,4 +1,3 @@
-import { VatIds } from "@/utils/makeVatIdList/makeVatIdList"
 import { sortObjectProperties } from "@/utils/sortObjectProperties"
 import { useSyncExternalStore } from "react"
 
@@ -15,6 +14,7 @@ const DEFAULT_VAT_IDS: VATIds = {
   "DE": "",
   "ES": "",
   "FR": "",
+  "IE": "",
   "IT": "",
   "PL": "",
 }
@@ -27,8 +27,9 @@ const store = {
       const data = localStorage.getItem('vat-ids')
       if (!data) return vatIds
 
-      // TODO: Add validation here
-      if (!isSame(vatIds, JSON.parse(data))) vatIds = sortObjectProperties(JSON.parse(data))
+      // Merge defaults so newly supported countries also appear for existing users.
+      const savedVatIds = { ...DEFAULT_VAT_IDS, ...JSON.parse(data) }
+      if (!isSame(vatIds, savedVatIds)) vatIds = sortObjectProperties(savedVatIds)
       return vatIds
     } catch {
       return vatIds
