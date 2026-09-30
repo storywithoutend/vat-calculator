@@ -245,10 +245,12 @@ export const MainView = ({}: {}) => {
           </TableContainer>
         </Stack>
       </Stack>
-      <EditVatIdsModal
-        open={showEditVatIdsModal}
-        onClose={() => setShowEditVatIdsModal(false)}
-      />
+      {showEditVatIdsModal && (
+        <EditVatIdsModal
+          open
+          onClose={() => setShowEditVatIdsModal(false)}
+        />
+      )}
       <AddFilesModal
         open={showAddFilesModal}
         onClose={() => setShowAddFilesModal(false)}
